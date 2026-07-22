@@ -54,11 +54,13 @@ kubernetes/
 
 ## Cluster Connectivity
 | `kubectl cluster-info` and `kubectl get nodes` |
+
 ![Cluster Connectivity](images/00-cluster-connectivity.png)
 
 
 ## Project Structure
 | Repository structure (`tree -L 1`) |
+
 ![Project Structure](images/01-project-structure.png)
 
 ---
