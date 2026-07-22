@@ -6,16 +6,16 @@ metadata:
   namespace: applications
 
 spec:
-  replicas: 3
+  replicas: 4
 
   selector:
     matchLabels:
-      app: nginx
+      app: nginx-rs
 
   template:
     metadata:
       labels:
-        app: nginx
+        app: nginx-rs
 
     spec:
       containers:
