@@ -8,7 +8,7 @@ A production-inspired DevOps, SRE and Cloud Homelab built from scratch using Kub
 
 > Homelab Network Diagram
 
-![Homelab Architecture](docs/images/architecture/homelab-overview.png)
+![Homelab Architecture](docs/images/architecture/homelab-architecture.png)
 
 ---
 
