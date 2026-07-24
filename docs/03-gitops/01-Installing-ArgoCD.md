@@ -174,7 +174,7 @@ argocd-server   NodePort   ...   80:30081/TCP,443:30444/TCP
 ```
 
 > 📸 **Screenshot: `images/argocd-pods-running.png`**
-
+> Place here, right after this step.
 > Command to capture: `kubectl get pods -n argocd`
 >
 > ![All ArgoCD pods running](images/argocd-pods-running.png)
@@ -188,12 +188,11 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
 
 Username: `admin`.
 
-This is a one-time bootstrap password. It should be changed after the
-first login:
-
-```bash
-argocd account update-password
-```
+This is a one-time bootstrap password, used only for the first login in
+[Step 10](#step-10--access-the-ui) and [Step 12](#step-12--log-in-via-cli).
+It is changed to a permanent password in
+[Step 13](#step-13--change-the-initial-admin-password), once the CLI is
+installed and logged in.
 
 ## Step 10 — Access the UI
 
@@ -205,6 +204,7 @@ http://<node-ip>:30081
 ```
 
 > 📸 **Screenshot: `images/argocd-ui-login.png`**
+> Place here, right after this step.
 > Command to capture: none — open the URL above in a browser and
 > screenshot the login page.
 >
@@ -262,6 +262,71 @@ Provide `admin` and the password retrieved in Step 9.
 means this login step was skipped or the session expired — see
 [06-troubleshooting.md](06-troubleshooting.md#3-argo-cd-server-address-unspecified).
 
+## Step 13 — Change the initial admin password
+
+The initial password retrieved in Step 9 is meant to be replaced with
+a permanent one immediately after the first successful login. Loading
+it into a variable instead of retyping it avoids the most common cause
+of failure in this step — a mistyped current password.
+
+Reload the initial password into a variable:
+
+```bash
+ARGO_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath='{.data.password}' | base64 -d)
+```
+
+Confirm it loaded correctly:
+
+```bash
+test -n "$ARGO_PASSWORD" && echo "Initial password loaded"
+```
+
+Prompt for a new password without echoing it to the terminal:
+
+```bash
+read -s -p "New ArgoCD password: " NEW_ARGO_PASSWORD
+echo
+```
+
+Update it:
+
+```bash
+argocd account update-password \
+  --current-password "$ARGO_PASSWORD" \
+  --new-password "$NEW_ARGO_PASSWORD"
+```
+
+Expected output:
+
+```
+Password updated
+```
+
+Verify the new password works by logging out and back in:
+
+```bash
+argocd logout <node-ip>:30081
+
+argocd login <node-ip>:30081 \
+  --username admin \
+  --password "$NEW_ARGO_PASSWORD" \
+  --insecure
+```
+
+Expected output:
+
+```
+'admin:login' logged in successfully
+```
+
+Once confirmed, the initial Secret is no longer needed and can be
+removed so it can't be used to authenticate again:
+
+```bash
+kubectl delete secret argocd-initial-admin-secret -n argocd
+```
+
 ## Command reference
 
 ```bash
@@ -305,4 +370,17 @@ argocd version --client
 
 # CLI login
 argocd login <node-ip>:30081 --insecure
+
+# Change the admin password
+ARGO_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath='{.data.password}' | base64 -d)
+read -s -p "New ArgoCD password: " NEW_ARGO_PASSWORD; echo
+argocd account update-password \
+  --current-password "$ARGO_PASSWORD" \
+  --new-password "$NEW_ARGO_PASSWORD"
+
+# Verify and clean up the initial secret
+argocd logout <node-ip>:30081
+argocd login <node-ip>:30081 --username admin --password "$NEW_ARGO_PASSWORD" --insecure
+kubectl delete secret argocd-initial-admin-secret -n argocd
 ```
