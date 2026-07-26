@@ -20,5 +20,8 @@ spec:
     namespace: applications
 
   syncPolicy:
+    automanted:
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
