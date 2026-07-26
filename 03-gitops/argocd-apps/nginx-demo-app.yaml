@@ -4,6 +4,8 @@ kind: Application
 metadata:
   name: nginx-demo
   namespace: argocd
+  labels:
+    managed-by: apps-root
 
 spec:
   project: default
