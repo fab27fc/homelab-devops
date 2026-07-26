@@ -1,16 +1,11 @@
-
-Readme · MD
 # 🔁 Phase 3a — GitOps with ArgoCD
  
 ## Objective
  
-Replace manual `kubectl apply` / `helm install` operations with a
-**GitOps** workflow, where Git becomes the single source of truth for
-what should be running in the cluster, and a controller (ArgoCD)
-continuously makes the cluster match it. By the end of this module, an
-application will be deployed, updated, and self-healed purely through
-Git commits — no direct `kubectl` write operations against the running
-resources.
+Stop running `kubectl apply` and `helm install` by hand. Instead, use
+**GitOps**: Git holds the setup you want, and a tool called ArgoCD
+makes the cluster match it. By the end of this module, an app will be
+deployed and updated only through Git commits — not through `kubectl`.
  
 ## What is ArgoCD
  
@@ -22,10 +17,10 @@ configured to — automatically applies the change so the cluster matches
 Git again.
  
 ```
-Git repository (desired state)
+Git repository (what you want)
       │
       ▼
-   ArgoCD  ──── compares desired state vs. live state
+   ArgoCD  ──── checks Git against the live cluster
       │
       ▼
 Kubernetes API Server
@@ -34,36 +29,43 @@ Kubernetes API Server
  Live cluster resources
 ```
  
-## Why GitOps
+## Why use GitOps
  
-- Every change to the cluster is traceable through Git history (who
-  changed what, when, and why).
-- Deployments become declarative and repeatable instead of a sequence
-  of manual commands.
-- Cluster drift (manual `kubectl edit`, ad-hoc fixes) is automatically
-  detected and can be automatically corrected.
-- It's the deployment pattern most commonly used alongside CI/CD
-  pipelines and Kubernetes in production environments.
-## Key concepts
+- Every change is a Git commit, so you can see who changed what, and
+  when.
+- You describe the end result you want, not the list of commands to
+  get there.
+- If someone changes something by hand in the cluster, ArgoCD notices
+  and can undo it.
+- This is the standard way most companies deploy to Kubernetes today.
+## Key terms
  
 | Term | Meaning |
 |---|---|
-| **Declarative deployment** | Describing the desired end state of a resource (e.g. "3 replicas of this image") instead of the sequence of commands to reach it. Kubernetes manifests are already declarative; GitOps extends this idea to *how* they get applied. |
-| **Reconciliation loop** | The continuous process where a controller compares desired state vs. live state and acts to correct any difference. ArgoCD runs its own reconciliation loop on top of the one Kubernetes controllers already run internally. |
-| **Drift** | Any difference between what's in Git and what's actually running in the cluster — usually caused by a manual `kubectl` change outside of Git. |
-| **Sync** | The act of applying the desired state (Git) to the cluster to resolve drift. Can be manual (a person triggers it) or automated (ArgoCD triggers it on its own). |
-| **Application (CRD)** | ArgoCD's own Kubernetes custom resource that defines *what* to deploy (a Git repo + path) and *where* to deploy it (a cluster + namespace). Each application managed by ArgoCD has one. |
+| **Declarative deployment** | You describe what you want (e.g. "3 copies of this app"), not the steps to get there. |
+| **Reconciliation loop** | ArgoCD keeps checking: does Git match the cluster? If not, it fixes it. |
+| **Drift** | Any time Git and the cluster don't match. Usually caused by someone changing the cluster by hand. |
+| **Sync** | Making the cluster match Git. Can be done manually or automatically. |
+| **Synced / OutOfSync** | Do Git and the cluster match right now? This has nothing to do with whether the app is working. |
+| **Healthy / Progressing / Degraded** | Is the app actually working (Pods running, Service reachable)? This has nothing to do with whether it matches Git. |
+| **Application (CRD)** | ArgoCD's own object. It tells ArgoCD what to deploy (a Git repo + folder) and where (a cluster + namespace). |
  
+`Synced` and `Healthy` are two different questions. An app can be:
+ 
+- `Healthy` but `OutOfSync` — it works fine, but someone changed
+  something in the cluster without using Git.
+- `Synced` but `Degraded` — Git and the cluster match, but the app is
+  broken anyway (e.g. the container is crashing).
 ## Contents
  
-| File | Description |
+| File | What it covers |
 |---|---|
-| [01-installing-argocd.md](01-installing-argocd.md) | Installing ArgoCD via Helm, exposing the UI, CLI setup. |
-| [02-connecting-to-git.md](02-connecting-to-git.md) | Registering a Git repository with ArgoCD. |
-| [03-first-application.md](03-first-application.md) | Deploying an application declaratively with an `Application` manifest. |
-| [04-app-of-apps.md](04-app-of-apps.md) | Managing multiple applications with the App of Apps pattern. |
-| [05-sync-policies.md](05-sync-policies.md) | Manual vs. automated sync, self-healing, pruning. |
-| [06-troubleshooting.md](06-troubleshooting.md) | Common issues found while building this module. |
+| [01-installing-argocd.md](01-installing-argocd.md) | Installing ArgoCD with Helm, opening the UI, setting up the CLI. |
+| [02-connecting-to-git.md](02-connecting-to-git.md) | Connecting ArgoCD to a Git repository. |
+| [03-first-application.md](03-first-application.md) | Deploying an app with an `Application` file. |
+| [04-app-of-apps.md](04-app-of-apps.md) | Managing many apps with the App of Apps pattern. |
+| [05-sync-policies.md](05-sync-policies.md) | Manual vs. automatic sync, self-healing, pruning. |
+| [06-troubleshooting.md](06-troubleshooting.md) | Problems found while building this module, and how to fix them. |
  
 ## Architecture
  
@@ -71,7 +73,7 @@ Kubernetes API Server
 Git repository (source of truth)
       │
       ▼
-   ArgoCD  ──── watches the repo, detects drift
+   ArgoCD  ──── watches the repo, finds drift
       │
       ▼
 Kubernetes API Server
@@ -84,5 +86,9 @@ Kubernetes API Server
  
 - A working Kubernetes cluster.
 - Helm v3 installed.
-- A Git repository (GitHub, GitLab, etc.) containing the Kubernetes
-  manifests to be managed.
+- A Git repository (GitHub, GitLab, etc.) with the Kubernetes files to
+  manage.
+## Screenshots
+ 
+Save screenshots to `images/` with clear names, for example:
+`images/argocd-ui-login.png`, `images/argocd-app-synced.png`.
