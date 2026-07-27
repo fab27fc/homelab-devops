@@ -1,4 +1,4 @@
-name: Hello World Workflow
+name: Homelab CI Pipeline
 
 on:
   push:
