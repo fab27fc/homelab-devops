@@ -20,7 +20,7 @@ spec:
     namespace: applications
 
   syncPolicy:
-    automanted:
+    automated:
       prune: true
       selfHeal: true
     syncOptions:
