@@ -1,16 +1,15 @@
+
 name: Homelab CI Pipeline
 
 on:
   push:
 
 jobs:
-
-  validate:
-
+  hello:
     runs-on: ubuntu-latest
-    
+
     steps:
-    
-      - name: Print Hello
-     
+      - uses: actions/checkout@v4
+
+      - name: Print message
         run: echo "Hello from GitHub Actions!"
