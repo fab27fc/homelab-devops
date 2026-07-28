@@ -1,0 +1,49 @@
+name: Kubernetes Manifest Validation
+
+on:
+  push:
+    paths:
+      - "01-kubernetes/**"
+      - ".github/workflows/kubernetes-validation.yml"
+
+  pull_request:
+    paths:
+      - "01-kubernetes/**"
+      - ".github/workflows/kubernetes-validation.yml"
+
+jobs:
+  validate-kubernetes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: |
+          python -m pip install --upgrade pip
+          pip install yamllint
+
+      - name: Validate YAML Syntax
+        run: |
+          yamllint 01-kubernetes
+
+      - name: Install Kubeconform
+        run: |
+          curl -L \
+            https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz \
+            -o kubeconform.tar.gz
+
+          tar -xzf kubeconform.tar.gz
+          sudo install kubeconform /usr/local/bin/kubeconform
+
+      - name: Validate Kubernetes Manifests
+        run: |
+          find 01-kubernetes \
+            -type f \
+            \( -name "*.yaml" -o -name "*.yml" \) \
+            -print0 |
+          xargs -0 kubeconform \
+            -summary \
+            -strict \
+            -ignore-missing-schemas
