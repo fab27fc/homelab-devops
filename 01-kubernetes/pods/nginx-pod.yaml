@@ -4,15 +4,13 @@ kind: Pod
 metadata:
   name: nginx-pod
   namespace: applications
-
   labels:
     app: nginx
     environment: lab
 
 spec:
   containers:
-  - name: nginx
-
-    image: nginx:stable-perl
-    ports:
-      - containerPort: 80
+    - name: nginx
+      image: nginx:stable-perl
+      ports:
+        - containerPort: 80
