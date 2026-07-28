@@ -1,0 +1,27 @@
+name: Kubernetes Schema Validation
+
+on:
+  push:
+    paths:
+      - '01-kubernetes/**'
+      - '.github/workflows/kubernetes-schema-validation.yml'
+
+jobs:
+
+  validate-schema:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -L https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz \
+          | tar xz
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: Verify Installation
+        run: kubeconform -v
