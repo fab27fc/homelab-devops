@@ -253,7 +253,7 @@ Expected result:
 - Job status
 
 ```
-images/first-workflow-success.png
+![Successful Workflow execution](images/first-workflow-success.png)
 ```
 
 ---
