@@ -5,12 +5,14 @@ on:
     paths:
       - "01-kubernetes/**"
       - ".github/workflows/kubernetes-validation.yml"
+      - ".yamllint"
 
   pull_request:
     paths:
       - "01-kubernetes/**"
       - ".github/workflows/kubernetes-validation.yml"
-
+      - ".yamllint"
+      
 jobs:
   validate-kubernetes:
     name: Validate Kubernetes Manifests
