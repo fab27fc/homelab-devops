@@ -251,8 +251,7 @@ Expected result:
 - GitHub Actions page
 - Successful Workflow execution
 - Job status
-
-```
+  
 ![Successful Workflow execution](images/first-workflow-success.png)
 ```
 
