@@ -1,3 +1,22 @@
+###############################################
+# File:
+# 02-network-subnets.tf
+#
+# Description:
+# Creates public and private subnets across
+# two Availability Zones.
+#
+# Lab:
+# Lab 03 - AWS Networking
+###############################################
+
+
+
+###############################################
+# Public Subnets
+###############################################
+
+
 resource "aws_subnet" "public" {
   count = length(var.public_subnet_cidrs)
 
@@ -11,6 +30,11 @@ resource "aws_subnet" "public" {
     Type = "Public"
   }
 }
+
+
+###############################################
+# Private Subnets
+###############################################
 
 resource "aws_subnet" "private" {
   count = length(var.private_subnet_cidrs)

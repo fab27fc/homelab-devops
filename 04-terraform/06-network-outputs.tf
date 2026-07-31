@@ -1,3 +1,19 @@
+###############################################
+# File:
+# 06-network-outputs.tf
+#
+# Description:
+# Exposes networking information generated
+# during the Terraform deployment.
+#
+# Lab:
+# Lab 03 - AWS Networking
+###############################################
+
+###############################################
+# Project Outputs
+###############################################
+
 output "aws_region" {
   description = "AWS region configured for this project."
   value       = var.aws_region
@@ -7,6 +23,10 @@ output "project_name" {
   description = "Project name."
   value       = var.project_name
 }
+
+###############################################
+# Networking Outputs
+###############################################
 
 output "vpc_id" {
   description = "ID of the main VPC."
