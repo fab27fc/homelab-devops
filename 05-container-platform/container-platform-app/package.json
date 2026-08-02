@@ -1,10 +1,11 @@
 {
   "name": "container-platform-app",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "This section of the homelab focuses on building, packaging, and deploying containerized applications.",
+  "main": "src/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js"
   },
   "keywords": [],
   "author": "",
