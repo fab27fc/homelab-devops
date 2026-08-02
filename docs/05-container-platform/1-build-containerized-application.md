@@ -335,14 +335,53 @@ Each endpoint should return a successful HTTP 200 response.
 
 The following screenshots were captured to validate the successful implementation of the application.
 
-| Screenshot | Description |
-|------------|-------------|
-| `application-home-page.png` | Main application interface displayed in a web browser. |
-| `application-health-endpoint.png` | Health endpoint returning the application status. |
-| `application-version-endpoint.png` | Version endpoint displaying the current application version. |
-| `application-environment-endpoint.png` | Runtime environment information. |
-| `application-hostname-endpoint.png` | Hostname of the current running instance. |
-| `application-info-endpoint.png` | Runtime information including Node.js version, platform, architecture, and uptime. |
+---
+
+## Application Home Page
+
+The following screenshot shows the main application interface running in a web browser.
+
+![Application Home Page](images/application-home-page.png)
+
+---
+
+## Health Endpoint
+
+The following screenshot shows the health endpoint returning the current application status.
+
+![Health Endpoint](images/application-health-endpoint.png)
+
+---
+
+## Version Endpoint
+
+The following screenshot displays the current version of the application.
+
+![Version Endpoint](images/application-version-endpoint.png)
+
+---
+
+## Environment Endpoint
+
+The following screenshot shows the runtime environment where the application is running.
+
+![Environment Endpoint](images/application-environment-endpoint.png)
+
+---
+
+## Hostname Endpoint
+
+The following screenshot displays the hostname of the running application instance.
+
+![Hostname Endpoint](images/application-hostname-endpoint.png)
+
+---
+
+## Information Endpoint
+
+The following screenshot displays runtime information including the Node.js version, operating system, architecture, and application uptime.
+
+![Information Endpoint](images/application-info-endpoint.png)
 
 ---
 
