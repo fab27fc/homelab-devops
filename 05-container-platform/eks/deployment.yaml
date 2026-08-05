@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: container-platform-app
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: container-platform-app
+
+  template:
+    metadata:
+      labels:
+        app: container-platform-app
+
+    spec:
+      containers:
+        - name: application
+          image: 651706759989.dkr.ecr.us-east-1.amazonaws.com/homelab/container-platform-app:1.0.0
+
+          ports:
+            - containerPort: 8080
