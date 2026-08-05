@@ -359,11 +359,75 @@ At this point:
 - kubelet has joined the cluster.
 - The Worker Nodes are registered with Kubernetes.
 
+...
+
 Screenshot
 
-```text
 images/eks-node-group-active.png
-```
+
+---
+
+# Screenshots
+
+## eks-node-role-created.png
+
+![eks-node-role-created](images/eks-node-role-created.png)
+
+---
+
+## eks-node-group-active.png
+
+![eks-node-group-active](images/eks-node-group-active.png)
+
+---
+
+## eks-kubectl-get-nodes.png
+
+![eks-kubectl-get-nodes](images/eks-kubectl-get-nodes.png)
+
+---
+
+## eks-system-pods-running.png
+
+![eks-system-pods-running](images/eks-system-pods-running.png)
+
+---
+
+## eks-ecr-image-validation.png
+
+![eks-ecr-image-validation](images/eks-ecr-image-validation.png)
+
+---
+
+## eks-image-pull-error.png
+
+![eks-image-pull-error](images/eks-image-pull-error.png)
+
+---
+
+## eks-service-created.png
+
+![eks-service-created](images/eks-service-created.png)
+
+---
+
+## eks-loadbalancer-active.png
+
+![eks-loadbalancer-active](images/eks-loadbalancer-active.png)
+
+---
+
+## eks-deployment-scaled-to-4-replicas.png
+
+![eks-deployment-scaled-to-4-replicas](images/eks-deployment-scaled-to-4-replicas.png)
+
+---
+
+## eks-self-healing.png
+
+![eks-self-healing](images/eks-self-healing.png)
+
+---
 
 # Best Practices
 
