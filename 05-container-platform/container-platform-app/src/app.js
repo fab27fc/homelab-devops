@@ -3,7 +3,7 @@ const os = require("os");
 
 const app = express();
 const port = process.env.PORT || 8080;
-const appVersion = process.env.APP_VERSION || "1.0.0";
+const appVersion = process.env.APP_VERSION || "1.1.0";
 const environment = process.env.NODE_ENV || "development";
 
 const status = "Running";
@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Container Platform App</title>
+        <title>Container Platform App v1.1.0</title>
 
         <style>
           * {
@@ -122,7 +122,7 @@ app.get("/", (req, res) => {
 
       <body>
         <main class="container">
-          <h1>Container Platform App</h1>
+          <h1>Container Platform App1.1.0</h1>
 
           <p class="subtitle">
             A lightweight Node.js application created for Docker, Amazon ECR,
@@ -222,4 +222,9 @@ app.use((req, res) => {
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`Container Platform App running on port ${port}`);
-});
+}); 
+
+
+
+
+
