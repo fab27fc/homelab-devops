@@ -1,0 +1,14 @@
+clusterName: "container-platform-eks"
+distribution: "eks"
+
+splunkPlatform:
+  endpoint: "https://inputs.prd-p-0siro.splunkcloud.com:8088"
+  index: "main"
+  logsEnabled: true
+  metricsEnabled: false:
+  tracesEnabled: false
+  insecureSkipVerify: true
+
+secret:
+  create: false
+  name: "splunk-hec-secret"

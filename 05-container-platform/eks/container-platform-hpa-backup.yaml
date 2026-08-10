@@ -1,0 +1,50 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  creationTimestamp: "2026-08-08T05:03:39Z"
+  name: container-platform-app
+  namespace: default
+  resourceVersion: "1013910"
+  uid: 12fef36d-ea3d-471c-9e86-2e8b1e8525c3
+spec:
+  maxReplicas: 5
+  metrics:
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 10
+        type: Utilization
+    type: Resource
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: container-platform-app
+status:
+  conditions:
+  - lastTransitionTime: "2026-08-08T05:03:54Z"
+    message: the HPA controller was able to update the target scale to 4
+    reason: SucceededRescale
+    status: "True"
+    type: AbleToScale
+  - lastTransitionTime: "2026-08-09T00:34:57Z"
+    message: the HPA was able to successfully calculate a replica count from cpu resource
+      utilization (percentage of request)
+    reason: ValidMetricFound
+    status: "True"
+    type: ScalingActive
+  - lastTransitionTime: "2026-08-09T00:34:57Z"
+    message: the desired count is within the acceptable range
+    reason: DesiredWithinRange
+    status: "False"
+    type: ScalingLimited
+  currentMetrics:
+  - resource:
+      current:
+        averageUtilization: 38
+        averageValue: 38m
+      name: cpu
+    type: Resource
+  currentReplicas: 2
+  desiredReplicas: 4
+  lastScaleTime: "2026-08-09T00:34:57Z"

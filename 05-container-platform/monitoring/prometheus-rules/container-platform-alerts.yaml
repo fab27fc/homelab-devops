@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: container-platform-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: container-platform.rules
+      rules:
+        - alert: ContainerPlatformDeploymentScaledToZero
+          expr: kube_deployment_spec_replicas{namespace="default",deployment="container-platform-app"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            application: container-platform-app
+          annotations:
+            summary: "Container Platform Deployment scaled to zero"
+            description: "The container-platform-app Deployment in the default namespace has zero desired replicas."

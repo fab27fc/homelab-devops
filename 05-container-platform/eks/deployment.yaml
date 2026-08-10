@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: application
-          image: 651706759989.dkr.ecr.us-east-1.amazonaws.com/homelab/container-platform-app:1.0.0
+          image: 651706759989.dkr.ecr.us-east-1.amazonaws.com/homelab/container-platform-app:1.1.0
 
           ports:
             - containerPort: 8080
