@@ -492,7 +492,7 @@ web_b_public_ip
 web_b_url
 ```
 
-![Terraform Apply Complete](terraform/screenshots/terraform-apply-complete.png)
+![Terraform Apply Complete](terraform/screenshots/06-terraform-apply-complete.png)
 
 ### Infrastructure as Code Concept
 
@@ -540,7 +540,7 @@ The AWS EC2 Console confirmed that both web servers were running.
 
 Both instances successfully passed their EC2 status checks.
 
-![Terraform EC2 Multi-AZ](terraform/screenshots/terraform-ec2-multi-az.png)
+![EC2 Instances Across Multiple Availability Zones](terraform/screenshots/07-terraform-ec2-multi-az.png)
 
 This confirms that the workload was distributed across two Availability Zones.
 
@@ -571,7 +571,7 @@ Private IP: 10.0.2.x
 Subnet:     Public Subnet B
 ```
 
-![Terraform EC2 Subnet AZ Validation](terraform/screenshots/terraform-ec2-subnet-az-validation.png)
+![EC2 Subnet and Availability Zone Validation](terraform/screenshots/08-terraform-ec2-subnet-az-validation.png)
 
 This demonstrates that Terraform correctly placed each EC2 instance in its intended subnet and Availability Zone.
 
@@ -621,7 +621,7 @@ Web Server B - us-east-1b
 Deployed with Terraform.
 ```
 
-![Terraform Web Servers Multi-AZ](terraform/screenshots/terraform-web-servers-multi-az.png)
+![Web Servers Across Multiple Availability Zones](terraform/screenshots/09-terraform-web-servers-multi-az.png)
 
 The successful HTTP requests confirm that:
 
@@ -661,8 +661,6 @@ VPC: 10.0.0.0/16
 └── Internet Gateway
 ```
 
-![Terraform Destroy Complete](terraform/screenshots/terraform-destroy-complete.png)
-
 ---
 
 ## 23. Verify Route Table Associations
@@ -676,8 +674,6 @@ saa-lab01-public-subnet-b ──┘
 ```
 
 This is important because a subnet requires a route to an Internet Gateway to provide direct Internet connectivity to resources with public IPv4 addresses.
-
-![Route Table Associations](terraform/screenshots/06-terraform-route-table-associations.png)
 
 ---
 
@@ -906,7 +902,7 @@ The completed cleanup returned:
 Destroy complete! Resources: 12 destroyed.
 ```
 
-![Terraform Destroy Complete](terraform/screenshots/07-terraform-destroy-complete.png)
+![Terraform Destroy Complete](terraform/screenshots/10-terraform-destroy-complete.png)
 
 ---
 
