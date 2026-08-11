@@ -1,0 +1,861 @@
+# Datadog Kubernetes Monitoring Lab
+
+## Overview
+
+This lab integrates Datadog with the Kubernetes cluster deployed as part of the Container Platform project.
+
+The goal is to provide infrastructure and application observability for the Kubernetes environment, including:
+
+- Kubernetes cluster monitoring
+- Node monitoring
+- Pod and container monitoring
+- CPU and memory metrics
+- Kubernetes workload visibility
+- Datadog Kubernetes Explorer
+- Kubernetes alerting
+- CrashLoopBackOff detection
+- Incident recovery validation
+
+The Datadog Agent is deployed using the Datadog Operator.
+
+---
+
+## Architecture
+
+The monitoring flow implemented in this lab is:
+
+```text
+                    Datadog SaaS
+                         ▲
+                         │
+                    Telemetry
+                         │
+                Datadog Cluster Agent
+                         ▲
+                         │
+              ┌──────────┴──────────┐
+              │                     │
+        Datadog Agent         Datadog Agent
+              │                     │
+        EKS Worker Node       EKS Worker Node
+              │                     │
+              └──────────┬──────────┘
+                         │
+                  Kubernetes Cluster
+                     homelab-k8s
+                         │
+              container-platform-app
+```
+
+The Datadog Agent runs on the Kubernetes worker nodes and collects infrastructure and Kubernetes telemetry.
+
+The Datadog Cluster Agent provides cluster-level monitoring and communicates cluster information to Datadog.
+
+---
+
+## Environment
+
+| Component | Configuration |
+|---|---|
+| Kubernetes Platform | Amazon EKS |
+| Cluster Name | `homelab-k8s` |
+| Kubernetes Nodes | 2 |
+| Datadog Namespace | `datadog` |
+| Environment Tag | `env:homelab` |
+| Datadog Deployment Method | Datadog Operator |
+| Monitoring Platform | Datadog |
+| Application | `container-platform-app` |
+| Application Namespace | `default` |
+| Container Registry | Amazon ECR |
+
+---
+
+# 1. Verify Existing Kubernetes Environment
+
+Before installing Datadog, verify the existing Kubernetes namespaces.
+
+```bash
+kubectl get ns
+```
+
+Create a dedicated namespace for Datadog:
+
+```bash
+kubectl create namespace datadog
+```
+
+Verify the namespace:
+
+```bash
+kubectl get ns
+```
+
+The `datadog` namespace should now appear as `Active`.
+
+### Validation
+
+![Datadog Namespace](screenshots/datadog-namespace.png)
+
+---
+
+# 2. Verify Existing Helm Deployments
+
+Verify the Helm releases currently installed in the cluster:
+
+```bash
+helm list -A
+```
+
+The existing monitoring stack should be visible.
+
+In this environment, Prometheus and Grafana are already deployed using:
+
+```text
+kube-prometheus-stack
+```
+
+Datadog is added as an additional observability platform rather than replacing the existing Prometheus/Grafana monitoring stack.
+
+### Validation
+
+![Existing Helm Monitoring Stack](screenshots/datadog-helm-installed.png)
+
+---
+
+# 3. Install the Datadog Operator
+
+Add the official Datadog Helm repository:
+
+```bash
+helm repo add datadog https://helm.datadoghq.com
+```
+
+Update the Helm repositories:
+
+```bash
+helm repo update
+```
+
+Install the Datadog Operator:
+
+```bash
+helm install datadog-operator datadog/datadog-operator \
+  --namespace datadog
+```
+
+The Datadog Operator manages the lifecycle and configuration of Datadog Agents inside Kubernetes.
+
+---
+
+# 4. Configure the Datadog API Secret
+
+Datadog requires an API key so that the Agents running inside Kubernetes can send telemetry to the Datadog platform.
+
+The API key must not be stored directly inside the Kubernetes manifest or committed to Git.
+
+Create a Kubernetes Secret:
+
+```bash
+kubectl create secret generic datadog-secret \
+  --from-literal=api-key='<DATADOG_API_KEY>' \
+  -n datadog
+```
+
+> **Security Note:** Never commit the Datadog API key to GitHub or include the real API key in screenshots.
+
+Verify that the Secret exists:
+
+```bash
+kubectl get secret datadog-secret -n datadog
+```
+
+The Secret should contain the `api-key` key.
+
+---
+
+# 5. Configure the DatadogAgent Resource
+
+Create the following file:
+
+```text
+datadog-agent.yaml
+```
+
+Configuration:
+
+```yaml
+kind: "DatadogAgent"
+apiVersion: "datadoghq.com/v2alpha1"
+
+metadata:
+  name: "datadog"
+  namespace: "datadog"
+
+spec:
+  global:
+    clusterName: "homelab-k8s"
+    site: "datadoghq.com"
+
+    credentials:
+      apiSecret:
+        secretName: "datadog-secret"
+        keyName: "api-key"
+
+    tags:
+      - "env:homelab"
+
+  features:
+    clusterChecks:
+      enabled: true
+
+    orchestratorExplorer:
+      enabled: true
+```
+
+The most important configuration parameters are:
+
+| Parameter | Purpose |
+|---|---|
+| `clusterName` | Identifies the Kubernetes cluster inside Datadog |
+| `site` | Datadog SaaS endpoint |
+| `apiSecret` | References the Kubernetes Secret containing the API key |
+| `env:homelab` | Tags telemetry generated by the homelab environment |
+| `clusterChecks` | Enables cluster-level checks |
+| `orchestratorExplorer` | Enables Kubernetes resource visibility |
+
+---
+
+# 6. Deploy the Datadog Agent
+
+Apply the DatadogAgent resource:
+
+```bash
+kubectl apply -f datadog-agent.yaml
+```
+
+The Datadog Operator reads this Custom Resource and automatically creates the required Datadog components.
+
+Verify the DatadogAgent resource:
+
+```bash
+kubectl get datadogagent -n datadog
+```
+
+Expected components include:
+
+```text
+NAME      AGENT            CLUSTER-AGENT     CLUSTER-CHECKS-RUNNER
+datadog   Running          Running           Running
+```
+
+### Validation
+
+![Datadog Agent Resource](screenshots/datadog-agent-resource.png)
+
+---
+
+# 7. Verify Datadog Pods
+
+Verify the Datadog workloads:
+
+```bash
+kubectl get pods -n datadog
+```
+
+The deployment should contain:
+
+```text
+datadog-agent-xxxxx
+datadog-agent-xxxxx
+datadog-cluster-agent-xxxxx
+datadog-operator-xxxxx
+```
+
+Because the EKS cluster contains two worker nodes, a Datadog Agent runs on each node.
+
+The expected state is:
+
+```text
+READY     STATUS     RESTARTS
+3/3       Running    0
+3/3       Running    0
+1/1       Running    0
+1/1       Running    0
+```
+
+### Validation
+
+![Datadog Pods Running](screenshots/datadog-pods-running.png)
+
+---
+
+# 8. Verify Cluster-Wide Kubernetes Health
+
+Verify all Kubernetes workloads:
+
+```bash
+kubectl get pods -A
+```
+
+This validates that the Datadog deployment did not negatively affect the existing Kubernetes workloads.
+
+The cluster contains workloads from:
+
+- `datadog`
+- `default`
+- `kube-system`
+- `monitoring`
+
+The Datadog Agents, application workloads, Kubernetes system components, Prometheus, Grafana, and Alertmanager should all remain operational.
+
+### Validation
+
+![Kubernetes Pods Running](screenshots/datadog-kubernetes-pods-running.png)
+
+---
+
+# 9. Verify Datadog Connectivity
+
+After deploying the DatadogAgent resource, Datadog should detect the Kubernetes Agent.
+
+The installation page should report:
+
+```text
+The Agent is connected and reporting data.
+```
+
+This confirms that:
+
+```text
+Kubernetes
+     │
+     ▼
+Datadog Agent
+     │
+     ▼
+Datadog SaaS
+```
+
+is functioning correctly.
+
+### Validation
+
+![Datadog Agent Connected](screenshots/datadog-agent-connected.png)
+
+---
+
+# 10. Verify the Kubernetes Cluster in Datadog
+
+Once telemetry reaches Datadog, the Kubernetes cluster becomes visible in the Datadog interface.
+
+The cluster should appear as:
+
+```text
+homelab-k8s
+```
+
+Datadog automatically discovers resources including:
+
+- Pods
+- Nodes
+- Deployments
+- Namespaces
+- Kubernetes system components
+- Monitoring workloads
+
+Datadog also provides cluster-level CPU and memory utilization.
+
+### Validation
+
+![Datadog Kubernetes Cluster](screenshots/datadog-kubernetes-cluster.png)
+
+---
+
+# 11. Kubernetes Explorer
+
+Open:
+
+```text
+Datadog
+→ Kubernetes
+→ Explorer
+→ Clusters
+```
+
+The Kubernetes Explorer provides centralized visibility into Kubernetes resources.
+
+The `homelab-k8s` cluster should report:
+
+- Kubernetes version
+- Node count
+- Pod status
+- CPU utilization
+- Memory utilization
+- Pod utilization
+
+### Validation
+
+![Datadog Kubernetes Explorer](screenshots/datadog-kubernetes-explorer-cluster.png)
+
+# Datadog Kubernetes Monitoring Lab
+
+## Overview
+
+This lab integrates Datadog with the Kubernetes cluster deployed as part of the Container Platform project.
+
+The goal is to provide infrastructure and application observability for the Kubernetes environment, including:
+
+- Kubernetes cluster monitoring
+- Node monitoring
+- Pod and container monitoring
+- CPU and memory metrics
+- Kubernetes workload visibility
+- Datadog Kubernetes Explorer
+- Kubernetes alerting
+- CrashLoopBackOff detection
+- Incident recovery validation
+
+The Datadog Agent is deployed using the Datadog Operator.
+
+---
+
+## Architecture
+
+The monitoring flow implemented in this lab is:
+
+```text
+                    Datadog SaaS
+                         ▲
+                         │
+                    Telemetry
+                         │
+                Datadog Cluster Agent
+                         ▲
+                         │
+              ┌──────────┴──────────┐
+              │                     │
+        Datadog Agent         Datadog Agent
+              │                     │
+        EKS Worker Node       EKS Worker Node
+              │                     │
+              └──────────┬──────────┘
+                         │
+                  Kubernetes Cluster
+                     homelab-k8s
+                         │
+              container-platform-app
+```
+
+The Datadog Agent runs on the Kubernetes worker nodes and collects infrastructure and Kubernetes telemetry.
+
+The Datadog Cluster Agent provides cluster-level monitoring and communicates cluster information to Datadog.
+
+---
+
+## Environment
+
+| Component | Configuration |
+|---|---|
+| Kubernetes Platform | Amazon EKS |
+| Cluster Name | `homelab-k8s` |
+| Kubernetes Nodes | 2 |
+| Datadog Namespace | `datadog` |
+| Environment Tag | `env:homelab` |
+| Datadog Deployment Method | Datadog Operator |
+| Monitoring Platform | Datadog |
+| Application | `container-platform-app` |
+| Application Namespace | `default` |
+| Container Registry | Amazon ECR |
+
+---
+
+# 1. Verify Existing Kubernetes Environment
+
+Before installing Datadog, verify the existing Kubernetes namespaces.
+
+```bash
+kubectl get ns
+```
+
+Create a dedicated namespace for Datadog:
+
+```bash
+kubectl create namespace datadog
+```
+
+Verify the namespace:
+
+```bash
+kubectl get ns
+```
+
+The `datadog` namespace should now appear as `Active`.
+
+### Validation
+
+![Datadog Namespace](screenshots/datadog-namespace.png)
+
+---
+
+# 2. Verify Existing Helm Deployments
+
+Verify the Helm releases currently installed in the cluster:
+
+```bash
+helm list -A
+```
+
+The existing monitoring stack should be visible.
+
+In this environment, Prometheus and Grafana are already deployed using:
+
+```text
+kube-prometheus-stack
+```
+
+Datadog is added as an additional observability platform rather than replacing the existing Prometheus/Grafana monitoring stack.
+
+### Validation
+
+![Existing Helm Monitoring Stack](screenshots/datadog-helm-installed.png)
+
+---
+
+# 3. Install the Datadog Operator
+
+Add the official Datadog Helm repository:
+
+```bash
+helm repo add datadog https://helm.datadoghq.com
+```
+
+Update the Helm repositories:
+
+```bash
+helm repo update
+```
+
+Install the Datadog Operator:
+
+```bash
+helm install datadog-operator datadog/datadog-operator \
+  --namespace datadog
+```
+
+The Datadog Operator manages the lifecycle and configuration of Datadog Agents inside Kubernetes.
+
+---
+
+# 4. Configure the Datadog API Secret
+
+Datadog requires an API key so that the Agents running inside Kubernetes can send telemetry to the Datadog platform.
+
+The API key must not be stored directly inside the Kubernetes manifest or committed to Git.
+
+Create a Kubernetes Secret:
+
+```bash
+kubectl create secret generic datadog-secret \
+  --from-literal=api-key='<DATADOG_API_KEY>' \
+  -n datadog
+```
+
+> **Security Note:** Never commit the Datadog API key to GitHub or include the real API key in screenshots.
+
+Verify that the Secret exists:
+
+```bash
+kubectl get secret datadog-secret -n datadog
+```
+
+The Secret should contain the `api-key` key.
+
+---
+
+# 5. Configure the DatadogAgent Resource
+
+Create the following file:
+
+```text
+datadog-agent.yaml
+```
+
+Configuration:
+
+```yaml
+kind: "DatadogAgent"
+apiVersion: "datadoghq.com/v2alpha1"
+
+metadata:
+  name: "datadog"
+  namespace: "datadog"
+
+spec:
+  global:
+    clusterName: "homelab-k8s"
+    site: "datadoghq.com"
+
+    credentials:
+      apiSecret:
+        secretName: "datadog-secret"
+        keyName: "api-key"
+
+    tags:
+      - "env:homelab"
+
+  features:
+    clusterChecks:
+      enabled: true
+
+    orchestratorExplorer:
+      enabled: true
+```
+
+The most important configuration parameters are:
+
+| Parameter | Purpose |
+|---|---|
+| `clusterName` | Identifies the Kubernetes cluster inside Datadog |
+| `site` | Datadog SaaS endpoint |
+| `apiSecret` | References the Kubernetes Secret containing the API key |
+| `env:homelab` | Tags telemetry generated by the homelab environment |
+| `clusterChecks` | Enables cluster-level checks |
+| `orchestratorExplorer` | Enables Kubernetes resource visibility |
+
+---
+
+# 6. Deploy the Datadog Agent
+
+Apply the DatadogAgent resource:
+
+```bash
+kubectl apply -f datadog-agent.yaml
+```
+
+The Datadog Operator reads this Custom Resource and automatically creates the required Datadog components.
+
+Verify the DatadogAgent resource:
+
+```bash
+kubectl get datadogagent -n datadog
+```
+
+Expected components include:
+
+```text
+NAME      AGENT            CLUSTER-AGENT     CLUSTER-CHECKS-RUNNER
+datadog   Running          Running           Running
+```
+
+### Validation
+
+![Datadog Agent Resource](screenshots/datadog-agent-resource.png)
+
+---
+
+# 7. Verify Datadog Pods
+
+Verify the Datadog workloads:
+
+```bash
+kubectl get pods -n datadog
+```
+
+The deployment should contain:
+
+```text
+datadog-agent-xxxxx
+datadog-agent-xxxxx
+datadog-cluster-agent-xxxxx
+datadog-operator-xxxxx
+```
+
+Because the EKS cluster contains two worker nodes, a Datadog Agent runs on each node.
+
+The expected state is:
+
+```text
+READY     STATUS     RESTARTS
+3/3       Running    0
+3/3       Running    0
+1/1       Running    0
+1/1       Running    0
+```
+
+### Validation
+
+![Datadog Pods Running](screenshots/datadog-pods-running.png)
+
+---
+
+# 8. Verify Cluster-Wide Kubernetes Health
+
+Verify all Kubernetes workloads:
+
+```bash
+kubectl get pods -A
+```
+
+This validates that the Datadog deployment did not negatively affect the existing Kubernetes workloads.
+
+The cluster contains workloads from:
+
+- `datadog`
+- `default`
+- `kube-system`
+- `monitoring`
+
+The Datadog Agents, application workloads, Kubernetes system components, Prometheus, Grafana, and Alertmanager should all remain operational.
+
+### Validation
+
+![Kubernetes Pods Running](screenshots/datadog-kubernetes-pods-running.png)
+
+---
+
+# 9. Verify Datadog Connectivity
+
+After deploying the DatadogAgent resource, Datadog should detect the Kubernetes Agent.
+
+The installation page should report:
+
+```text
+The Agent is connected and reporting data.
+```
+
+This confirms that:
+
+```text
+Kubernetes
+     │
+     ▼
+Datadog Agent
+     │
+     ▼
+Datadog SaaS
+```
+
+is functioning correctly.
+
+### Validation
+
+![Datadog Agent Connected](screenshots/datadog-agent-connected.png)
+
+---
+
+# 10. Verify the Kubernetes Cluster in Datadog
+
+Once telemetry reaches Datadog, the Kubernetes cluster becomes visible in the Datadog interface.
+
+The cluster should appear as:
+
+```text
+homelab-k8s
+```
+
+Datadog automatically discovers resources including:
+
+- Pods
+- Nodes
+- Deployments
+- Namespaces
+- Kubernetes system components
+- Monitoring workloads
+
+Datadog also provides cluster-level CPU and memory utilization.
+
+### Validation
+
+![Datadog Kubernetes Cluster](screenshots/datadog-kubernetes-cluster.png)
+
+---
+
+# 11. Kubernetes Explorer
+
+Open:
+
+```text
+Datadog
+→ Kubernetes
+→ Explorer
+→ Clusters
+```
+
+The Kubernetes Explorer provides centralized visibility into Kubernetes resources.
+
+The `homelab-k8s` cluster should report:
+
+- Kubernetes version
+- Node count
+- Pod status
+- CPU utilization
+- Memory utilization
+- Pod utilization
+
+### Validation
+
+![Datadog Kubernetes Explorer](screenshots/datadog-kubernetes-explorer-cluster.png)
+
+
+---
+
+# Skills Demonstrated
+
+This lab demonstrates practical experience with:
+
+- Datadog
+- Kubernetes Monitoring
+- Amazon EKS
+- Datadog Operator
+- Datadog Agent
+- Kubernetes Cluster Monitoring
+- Kubernetes Explorer
+- Pod Monitoring
+- Node Monitoring
+- CPU and Memory Metrics
+- Container Metrics
+- Kubernetes Events
+- Kubernetes Monitors
+- CrashLoopBackOff Detection
+- Alerting and Monitoring
+- Incident Detection
+- Failure Simulation
+- Monitoring Recovery
+- Kubernetes Troubleshooting
+
+---
+
+# Conclusion
+
+In this lab, Datadog was integrated with the Amazon EKS cluster to provide centralized observability for the Kubernetes platform.
+
+The Datadog Operator and Datadog Agents were deployed inside the cluster, allowing Datadog to automatically discover Kubernetes resources and collect infrastructure and container metrics.
+
+The Kubernetes Explorer was used to monitor the `homelab-k8s` cluster, including worker nodes, namespaces, deployments, Pods, CPU utilization, memory utilization, network activity, and container health.
+
+The `container-platform-app` workload was inspected directly from Datadog to analyze application-level CPU, memory, network, container state, and restart metrics.
+
+Datadog Kubernetes monitors were also validated by intentionally generating a `CrashLoopBackOff` condition. Datadog successfully detected the unhealthy Pod and transitioned the Kubernetes monitor into an `ALERT` state.
+
+After the faulty test Pod was removed, Datadog detected the recovery and automatically returned the monitor to the `OK` state.
+
+This demonstrated a complete observability workflow:
+
+```text
+Kubernetes Workload
+        ↓
+Datadog Agent
+        ↓
+Metrics and Cluster State
+        ↓
+Datadog Kubernetes Explorer
+        ↓
+Monitor
+        ↓
+ALERT
+        ↓
+Troubleshooting
+        ↓
+Recovery
+        ↓
+OK
