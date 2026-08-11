@@ -492,7 +492,7 @@ web_b_public_ip
 web_b_url
 ```
 
-![Terraform Apply Complete](terraform/screenshots/01-terraform-apply-complete.png)
+![Terraform Apply Complete](terraform/screenshots/terraform-apply-complete.png)
 
 ### Infrastructure as Code Concept
 
@@ -540,7 +540,7 @@ The AWS EC2 Console confirmed that both web servers were running.
 
 Both instances successfully passed their EC2 status checks.
 
-![EC2 Instances](terraform/screenshots/02-terraform-ec2-instances.png)
+![Terraform EC2 Multi-AZ](terraform/screenshots/terraform-ec2-multi-az.png)
 
 This confirms that the workload was distributed across two Availability Zones.
 
@@ -571,7 +571,7 @@ Private IP: 10.0.2.x
 Subnet:     Public Subnet B
 ```
 
-![AWS CLI EC2 Validation](terraform/screenshots/03-terraform-cli-ec2-validation.png)
+![Terraform EC2 Subnet AZ Validation](terraform/screenshots/terraform-ec2-subnet-az-validation.png)
 
 This demonstrates that Terraform correctly placed each EC2 instance in its intended subnet and Availability Zone.
 
@@ -621,7 +621,7 @@ Web Server B - us-east-1b
 Deployed with Terraform.
 ```
 
-![Terraform Web Servers](terraform/screenshots/04-terraform-web-servers.png)
+![Terraform Web Servers Multi-AZ](terraform/screenshots/terraform-web-servers-multi-az.png)
 
 The successful HTTP requests confirm that:
 
@@ -661,7 +661,7 @@ VPC: 10.0.0.0/16
 └── Internet Gateway
 ```
 
-![Terraform VPC Resource Map](terraform/screenshots/05-terraform-vpc-resource-map.png)
+![Terraform Destroy Complete](terraform/screenshots/terraform-destroy-complete.png)
 
 ---
 
