@@ -79,6 +79,6 @@ already exist, for example:
 
 ## 📸 Screenshots
 
-- `docs/05-container-platform/images/grafana-login.png` — Grafana login screen.
+- ![Grafana login](images/grafana-login.png) — Grafana login screen.
 - `images/grafana-datasources.png` — **Connections → Data Sources**
   showing Prometheus already configured.
