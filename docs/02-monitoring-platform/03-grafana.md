@@ -77,8 +77,8 @@ already exist, for example:
 - Kubernetes / API Server
 - Node Exporter
 
-## 📸 Suggested screenshots
+## 📸 Screenshots
 
-- `images/grafana-login.png` — Grafana login screen.
+- `docs/05-container-platform/images/grafana-login.png` — Grafana login screen.
 - `images/grafana-datasources.png` — **Connections → Data Sources**
   showing Prometheus already configured.
